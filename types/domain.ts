@@ -53,7 +53,8 @@ export interface Candidate {
   districtCode: string;
   number: number;              // 기호 번호 (정렬 키 — NF-05)
   name: string;
-  partyId: string | null;      // 무소속 = null
+  partyId: string | null;      // 무소속 = null (정당 마스터 매핑 전 임시로 정당명 사용)
+  partyName: string;           // 소속 정당명 표시용 (무소속 = '무소속') — S-04 후보 카드
   position: CandidatePosition;
   photoUrl?: string;
 }
