@@ -1,26 +1,99 @@
 @import "tailwindcss";
 
+/* =============================================
+   고정 색상 토큰 (라이트/다크 동일)
+   ============================================= */
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  /* 브랜드 */
+  --color-brand: #1D9E75;
+  --color-brand-light: #E1F5EE;
+  --color-brand-medium: #5DCAA5;
+
+  /* 사전투표 */
+  --color-early-voting-bg: #FAEEDA;
+  --color-early-voting-fg: #633806;
+
+  /* 모의투표 용지 배경 */
+  --color-ballot-green: #E1F5EE;
+  --color-ballot-peach: #FAECE7;
+  --color-ballot-blue: #E6F1FB;
+
+  /* 시맨틱 (라이트 기본) */
+  --color-text-primary: #0F172A;
+  --color-text-secondary: #64748B;
+  --color-background-primary: #FFFFFF;
+  --color-background-secondary: #F8FAFC;
+  --color-border-default: rgba(15, 23, 42, 0.08);
+  --color-focus-ring: #1D9E75;
+
+  /* 타이포그래피 */
+  --font-size-title: 1.125rem;
+  --font-size-body: 0.9375rem;
+  --font-size-label: 0.75rem;
+  --font-size-caption: 0.75rem;
+  --font-weight-medium: 500;
+  --font-weight-regular: 400;
+  --letter-spacing-label: 0.08em;
+
+  /* 레이아웃 */
+  --radius-card: 0.5rem;
+  --radius-button: 0.5rem;
+  --radius-pill: 9999px;
+  --border-width-card: 0.5px;
+  --space-touch-min: 2.75rem;
+  --bottom-tab-height: 3.5rem;
+  --safe-area-bottom: env(safe-area-inset-bottom);
 }
 
+/* 시맨틱 색상 다크모드 재정의 */
+@media (prefers-color-scheme: dark) {
+  :root {
+    --color-text-primary: #F1F5F9;
+    --color-text-secondary: #94A3B8;
+    --color-background-primary: #0F172A;
+    --color-background-secondary: #020617;
+    --color-border-default: rgba(241, 245, 249, 0.12);
+    --color-focus-ring: #5DCAA5;
+  }
+}
+
+/* =============================================
+   Tailwind v4 @theme 매핑
+   ============================================= */
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
+  --color-brand: var(--color-brand);
+  --color-brand-light: var(--color-brand-light);
+  --color-brand-medium: var(--color-brand-medium);
+
+  --color-early-voting-bg: var(--color-early-voting-bg);
+  --color-early-voting-fg: var(--color-early-voting-fg);
+
+  --color-ballot-green: var(--color-ballot-green);
+  --color-ballot-peach: var(--color-ballot-peach);
+  --color-ballot-blue: var(--color-ballot-blue);
+
+  --color-text-primary: var(--color-text-primary);
+  --color-text-secondary: var(--color-text-secondary);
+  --color-background-primary: var(--color-background-primary);
+  --color-background-secondary: var(--color-background-secondary);
+  --color-border-default: var(--color-border-default);
+  --color-focus-ring: var(--color-focus-ring);
+
+  --radius-card: var(--radius-card);
+  --radius-button: var(--radius-button);
+  --radius-pill: var(--radius-pill);
+  --border-width-card: var(--border-width-card);
+
+  /* spacing 네임스페이스로 매핑 → min-h-touch-min, h-bottom-tab 유틸리티 생성 */
+  --spacing-touch-min: var(--space-touch-min);
+  --spacing-bottom-tab: var(--bottom-tab-height);
+
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
-}
-
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background: var(--color-background-primary);
+  color: var(--color-text-primary);
+  font-family: var(--font-geist-sans), system-ui, sans-serif;
 }
