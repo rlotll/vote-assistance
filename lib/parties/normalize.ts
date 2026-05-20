@@ -1,48 +1,48 @@
-// 정당정책 API(15040588 PartyPlcInfoInqireService) 응답 정규화 — api_contract §4.4
-// 응답을 정당별로 그룹핑해 PartyWithPledges[]로 변환. 필드명은 키 발급 후 확정 (§6).
-import { bySymbolNumber } from '@/types/domain';
-import { classifyPledge } from '@/lib/pledges/category-classifier';
+// 정당정책(PartyPlcInfoInqireService)은 partyName별 호출이 필요하다.
+// 비례 후보자 조회에서 정당명+기호(giho)를 추출한 뒤, 정당별 정책(와이드 포맷)을 묶는다.
+import { expandWidePledges, type WidePledgeItem } from '@/lib/pledges/wide-pledges';
 import { partyBrandColor } from './brand-color';
 import type { PartyWithPledges } from '@/types/domain';
 
-export interface RawPartyPledgeItem {
-  jdName: string;         // 정당명
-  jdSym?: string;         // 정당 기호번호
-  prmsId?: string;        // 정책 ID
-  prmsRealmName?: string; // 정책 분야명 (분류 힌트)
-  prmsTitle: string;      // 정책 제목
-  prmsCn: string;         // 정책 내용
-  prmsUrl?: string;       // 원문 출처 (F-15)
+// 비례 후보자 응답의 정당 식별 필드 (giho는 정당 내 추천순위라 정당 기호가 아님)
+export interface RawProportionalCandidate {
+  jdName?: string;
 }
 
-// 정당별 그룹핑 + 기호번호 오름차순 정렬 (NF-05 중립성)
-export function normalizePartyPledges(raws: RawPartyPledgeItem[]): PartyWithPledges[] {
-  const groups = new Map<string, PartyWithPledges>();
+// 정당코드(getCommonPartyCodeList) — pOrder가 정당 투표용지 기호 순서
+export interface RawPartyCode {
+  jdName?: string;
+  pOrder?: string;
+}
 
-  raws.forEach((raw, index) => {
-    const name = raw.jdName;
-    if (!groups.has(name)) {
-      groups.set(name, {
-        party: {
-          id: name,
-          number: parseInt(raw.jdSym ?? '', 10) || 0,
-          name,
-          brandColor: partyBrandColor(name),
-          isProportional: true,
-        },
-        pledges: [],
-      });
-    }
-    groups.get(name)!.pledges.push({
-      id: raw.prmsId ?? `${name}-${index}`,
-      ownerType: 'party',
-      ownerId: name,
-      category: classifyPledge(`${raw.prmsTitle} ${raw.prmsCn} ${raw.prmsRealmName ?? ''}`),
-      title: raw.prmsTitle,
-      body: raw.prmsCn,
-      sourceUrl: raw.prmsUrl || undefined,
-    });
-  });
+// 비례 출마 정당(후보자 기준) ∩ 정당코드(pOrder=기호) → {name, number} 기호 오름차순 (NF-05 중립성)
+export function extractParties(
+  cands: RawProportionalCandidate[],
+  partyCodes: RawPartyCode[],
+): { name: string; number: number }[] {
+  const orderMap = new Map<string, number>();
+  for (const p of partyCodes) {
+    const name = p.jdName?.trim();
+    if (name && !orderMap.has(name)) orderMap.set(name, parseInt(p.pOrder ?? '', 10) || 0);
+  }
+  const names = new Set<string>();
+  for (const c of cands) {
+    const name = c.jdName?.trim();
+    if (name && name !== '무소속') names.add(name);
+  }
+  return [...names]
+    .map((name) => ({ name, number: orderMap.get(name) ?? 0 }))
+    .sort((a, b) => a.number - b.number);
+}
 
-  return [...groups.values()].sort((a, b) => bySymbolNumber(a.party, b.party));
+// 정당 1곳 + 정책 응답(와이드 포맷) → PartyWithPledges
+export function buildPartyGroup(
+  name: string,
+  number: number,
+  policyRaws: WidePledgeItem[],
+): PartyWithPledges {
+  return {
+    party: { id: name, number, name, brandColor: partyBrandColor(name), isProportional: true },
+    pledges: policyRaws.flatMap((raw) => expandWidePledges(raw, 'party', name)),
+  };
 }

@@ -20,7 +20,7 @@
 - 모든 인터랙티브 컴포넌트는 **최소 터치 영역 44×44px** 확보 (`--space-touch-min`, 와이어프레임 §6).
 - 키보드 포커스 시 `outline: 2px solid var(--color-focus-ring)` 일관 적용.
 - 아이콘은 `lucide-react`만 사용. 장식용 아이콘에는 `aria-hidden="true"`.
-- 다크모드 별도 prop 없음 — 토큰 기반 자동 대응.
+- 라이트모드 전용 — 시맨틱 토큰은 단일 값 고정(`color-scheme: light`).
 - `'use client'` 지시문은 인터랙션이 필요한 컴포넌트에만 부착.
 
 ---
@@ -269,7 +269,7 @@ toast.success(message, opts?)
 T-08 완료 기준:
 
 - [ ] 모든 컴포넌트가 44px 터치 영역 충족 (`qa_checklist.md` 접근성 항목)
-- [ ] 다크모드 토글 시 시각적 회귀 없음
+- [ ] 라이트모드 단일 테마로 모든 variant 시각 확인 (다크모드 미지원)
 - [ ] Storybook 또는 `app/_dev/` 라우트에서 모든 variant 한 페이지 확인 가능
 - [ ] 모든 인터랙티브 컴포넌트가 키보드만으로 조작 가능
 - [ ] 모든 컴포넌트가 외부 라이브러리(Radix 등) 도입 없이 React 19 + Tailwind만으로 구현 (의존성 최소화)

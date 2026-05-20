@@ -3,6 +3,7 @@
 import { useElection } from '@/hooks/useElection';
 import { DdayBanner } from './DdayBanner';
 import { NoElectionNotice } from './NoElectionNotice';
+import { DistrictSummary } from './DistrictSummary';
 import { QuickMenu } from './QuickMenu';
 import { Skeleton } from '@/components/ui/Skeleton';
 
@@ -15,6 +16,7 @@ export function HomeClient() {
         <div aria-busy="true">
           <Skeleton preset="list-item" className="h-32" />
         </div>
+        <DistrictSummary />
         <QuickMenu />
       </div>
     );
@@ -27,6 +29,7 @@ export function HomeClient() {
       ) : !apiError ? (
         <NoElectionNotice />
       ) : null}
+      <DistrictSummary />
       <QuickMenu />
     </div>
   );

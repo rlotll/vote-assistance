@@ -75,7 +75,7 @@ export function Tabs({ value, onChange, items, ariaLabel, className = '' }: Tabs
               'min-h-touch-min px-4 text-[0.9375rem] font-medium transition-colors',
               'focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-[var(--color-focus-ring)]',
               isActive
-                ? 'text-brand border-b-2 border-brand'
+                ? 'text-brand-strong border-b-2 border-brand'
                 : 'text-text-secondary border-b-2 border-transparent',
               isDisabled ? 'opacity-40 cursor-not-allowed' : 'hover:text-brand',
             ]

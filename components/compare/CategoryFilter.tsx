@@ -22,7 +22,7 @@ export function CategoryFilter() {
               'inline-flex items-center min-h-touch-min px-3 rounded-pill text-[0.875rem] font-medium transition-colors',
               'focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--color-focus-ring)]',
               isSelected
-                ? 'bg-brand text-white'
+                ? 'bg-brand-strong text-white'
                 : 'bg-background-secondary text-text-secondary hover:text-brand',
             ].join(' ')}
           >

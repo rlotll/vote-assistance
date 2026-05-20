@@ -14,7 +14,8 @@ export async function GET(request: Request): Promise<Response> {
   const { searchParams } = new URL(request.url);
   const sgId = searchParams.get('sgId');
   const sgTypecode = searchParams.get('sgTypecode');
-  const sggCityCode = searchParams.get('sggCityCode');
+  const sidoName = searchParams.get('sidoName');  // NEC sdName
+  const sggName = searchParams.get('sggName');    // NEC sggName
 
   if (!sgId || !sgTypecode) {
     return Response.json({
@@ -28,8 +29,15 @@ export async function GET(request: Request): Promise<Response> {
   for (let pageNo = 1; pageNo <= 20; pageNo++) {
     const page = await fetchNec<RawCandidateItem>({
       service: 'PofelcddInfoInqireService',
-      operation: 'getPoelpcddRegistSttusInfoInqire',
-      params: { sgId, sgTypecode, ...(sggCityCode ? { sggCityCode } : {}), pageNo },
+      // getPofelcdd…(후보자) ≠ getPoelpcdd…(예비후보자, 후보자등록 개시 후 미제공)
+      operation: 'getPofelcddRegistSttusInfoInqire',
+      params: {
+        sgId,
+        sgTypecode,
+        ...(sidoName ? { sdName: sidoName } : {}),
+        ...(sggName ? { sggName } : {}),
+        pageNo,
+      },
     });
 
     if (!page.ok) {

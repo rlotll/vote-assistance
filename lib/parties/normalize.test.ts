@@ -1,56 +1,67 @@
 import { describe, it, expect } from 'vitest';
-import { normalizePartyPledges, type RawPartyPledgeItem } from './normalize';
+import { extractParties, buildPartyGroup } from './normalize';
+import type { WidePledgeItem } from '@/lib/pledges/wide-pledges';
 
-const raw = (over: Partial<RawPartyPledgeItem> = {}): RawPartyPledgeItem => ({
-  jdName: '가나다당',
-  jdSym: '1',
-  prmsTitle: '청년 일자리 확대',
-  prmsCn: '창업 지원',
-  ...over,
+const codes = [
+  { jdName: '가당', pOrder: '1' },
+  { jdName: '나당', pOrder: '2' },
+  { jdName: '다당', pOrder: '3' },
+];
+
+describe('extractParties — 출마 정당 ∩ 정당코드(pOrder=기호)', () => {
+  it('출마 정당에 pOrder 기호를 부여하고 기호 오름차순 정렬', () => {
+    const result = extractParties(
+      [{ jdName: '다당' }, { jdName: '가당' }, { jdName: '나당' }, { jdName: '가당' }],
+      codes,
+    );
+    expect(result).toEqual([
+      { name: '가당', number: 1 },
+      { name: '나당', number: 2 },
+      { name: '다당', number: 3 },
+    ]);
+  });
+
+  it('무소속·빈 정당명은 제외', () => {
+    const result = extractParties(
+      [{ jdName: '무소속' }, { jdName: '' }, { jdName: undefined }, { jdName: '가당' }],
+      codes,
+    );
+    expect(result).toEqual([{ name: '가당', number: 1 }]);
+  });
+
+  it('정당코드에 없는 정당은 기호 0', () => {
+    expect(extractParties([{ jdName: '신생당' }], codes)).toEqual([{ name: '신생당', number: 0 }]);
+  });
 });
 
-describe('normalizePartyPledges — 그룹핑', () => {
-  it('같은 정당의 정책을 하나의 그룹으로 묶는다', () => {
-    const groups = normalizePartyPledges([
-      raw({ jdName: '가나다당', jdSym: '1', prmsTitle: '정책A' }),
-      raw({ jdName: '가나다당', jdSym: '1', prmsTitle: '정책B' }),
-    ]);
-    expect(groups).toHaveLength(1);
-    expect(groups[0].pledges.map((p) => p.title)).toEqual(['정책A', '정책B']);
+describe('buildPartyGroup — 정당 + 와이드 정책', () => {
+  const policy: WidePledgeItem = {
+    prmsCnt: '2',
+    prmsTitle1: '청년 일자리',
+    prmmCont1: '고용 확대',
+    prmsRealmName1: '경제',
+    prmsTitle2: '재생에너지',
+    prmmCont2: '탄소중립',
+    prmsRealmName2: '환경',
+  };
+
+  it('정책을 펼쳐 PartyWithPledges 구성', () => {
+    const group = buildPartyGroup('국민의힘', 2, [policy]);
+    expect(group.party).toEqual({
+      id: '국민의힘',
+      number: 2,
+      name: '국민의힘',
+      brandColor: '#E61E2B',
+      isProportional: true,
+    });
+    expect(group.pledges).toHaveLength(2);
+    expect(group.pledges[0]).toMatchObject({ ownerType: 'party', ownerId: '국민의힘', category: 'economy' });
+    expect(group.pledges[1].category).toBe('environment');
   });
 
-  it('정책의 ownerType은 party, ownerId는 정당명', () => {
-    const groups = normalizePartyPledges([raw()]);
-    expect(groups[0].pledges[0].ownerType).toBe('party');
-    expect(groups[0].pledges[0].ownerId).toBe('가나다당');
-  });
-
-  it('본문 기반으로 분야를 분류한다', () => {
-    const groups = normalizePartyPledges([
-      raw({ prmsTitle: '재생에너지 확대', prmsCn: '탄소 중립' }),
-    ]);
-    expect(groups[0].pledges[0].category).toBe('environment');
-  });
-});
-
-describe('normalizePartyPledges — 기호순 정렬 (NF-05)', () => {
-  it('정당을 기호번호 오름차순으로 정렬', () => {
-    const groups = normalizePartyPledges([
-      raw({ jdName: '다당', jdSym: '3' }),
-      raw({ jdName: '가당', jdSym: '1' }),
-      raw({ jdName: '나당', jdSym: '2' }),
-    ]);
-    expect(groups.map((g) => g.party.number)).toEqual([1, 2, 3]);
-    expect(groups.map((g) => g.party.name)).toEqual(['가당', '나당', '다당']);
-  });
-
-  it('정당 색상과 비례 플래그를 채운다', () => {
-    const groups = normalizePartyPledges([raw({ jdName: '국민의힘', jdSym: '2' })]);
-    expect(groups[0].party.brandColor).toBe('#E61E2B');
-    expect(groups[0].party.isProportional).toBe(true);
-  });
-
-  it('빈 입력은 빈 배열', () => {
-    expect(normalizePartyPledges([])).toEqual([]);
+  it('정책 응답이 비면 pledges 빈 배열 (정당은 유지)', () => {
+    const group = buildPartyGroup('가당', 1, []);
+    expect(group.party.name).toBe('가당');
+    expect(group.pledges).toEqual([]);
   });
 });

@@ -4,10 +4,15 @@
    고정 색상 토큰 (라이트/다크 동일)
    ============================================= */
 :root {
+  /* 라이트모드 강제 (시스템 다크모드 무시) — 네이티브 컨트롤·스크롤바도 라이트 */
+  color-scheme: light;
+
   /* 브랜드 */
   --color-brand: #1D9E75;
   --color-brand-light: #E1F5EE;
   --color-brand-medium: #5DCAA5;
+  /* 텍스트 전용 진한 브랜드 — 흰 배경 위 작은 텍스트 WCAG AA(4.5:1) 충족 */
+  --color-brand-strong: #157A5A;
 
   /* 사전투표 */
   --color-early-voting-bg: #FAEEDA;
@@ -45,18 +50,6 @@
   --safe-area-bottom: env(safe-area-inset-bottom);
 }
 
-/* 시맨틱 색상 다크모드 재정의 */
-@media (prefers-color-scheme: dark) {
-  :root {
-    --color-text-primary: #F1F5F9;
-    --color-text-secondary: #94A3B8;
-    --color-background-primary: #0F172A;
-    --color-background-secondary: #020617;
-    --color-border-default: rgba(241, 245, 249, 0.12);
-    --color-focus-ring: #5DCAA5;
-  }
-}
-
 /* =============================================
    Tailwind v4 @theme 매핑
    ============================================= */
@@ -64,6 +57,7 @@
   --color-brand: var(--color-brand);
   --color-brand-light: var(--color-brand-light);
   --color-brand-medium: var(--color-brand-medium);
+  --color-brand-strong: var(--color-brand-strong);
 
   --color-early-voting-bg: var(--color-early-voting-bg);
   --color-early-voting-fg: var(--color-early-voting-fg);

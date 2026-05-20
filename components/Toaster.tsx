@@ -29,7 +29,7 @@ export function Toaster() {
           {t.action && (
             <button
               onClick={() => { t.action!.onClick(); dismiss(t.id); }}
-              className="shrink-0 text-brand text-[length:var(--font-size-label)] font-medium underline-offset-2 hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--color-focus-ring)]"
+              className="shrink-0 text-brand-strong text-[length:var(--font-size-label)] font-medium underline-offset-2 hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--color-focus-ring)]"
             >
               {t.action.label}
             </button>

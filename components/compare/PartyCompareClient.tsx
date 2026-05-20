@@ -5,19 +5,25 @@ import { useElection } from '@/hooks/useElection';
 import { usePartyPledges } from '@/hooks/usePartyPledges';
 import { hasProportionalRepresentation } from '@/types/domain';
 import { categoryLabel } from '@/lib/pledge-category';
+import { sgTypeMeta } from '@/lib/elections/sg-type';
 import { Skeleton } from '@/components/ui/Skeleton';
 import { CategoryFilter } from './CategoryFilter';
 import { PartyCard } from './PartyCard';
 
 export function PartyCompareClient() {
   const selectedCategories = useUserStore((s) => s.selectedCategories);
-  const { election, isLoading: electionLoading } = useElection();
+  const district = useUserStore((s) => s.district);
+  const { election, electionTypes, isLoading: electionLoading } = useElection();
 
   const proportional = !!election && hasProportionalRepresentation(election);
+  // 비례 종류(광역/기초 비례 등) 중 첫 번째 기준으로 정당 목록 추출
+  const proportionalType = electionTypes
+    .filter((e) => sgTypeMeta(e.sgTypecode).isProportional)
+    .sort((a, b) => Number(a.sgTypecode) - Number(b.sgTypecode))[0];
   const sgId = proportional ? election!.id : null;
-  const sgTypecode = proportional ? election!.sgTypecode : null;
+  const sgTypecode = proportional ? (proportionalType?.sgTypecode ?? null) : null;
 
-  const { partyGroups, isLoading: partiesLoading, isError } = usePartyPledges(sgId, sgTypecode);
+  const { partyGroups, isLoading: partiesLoading, isError } = usePartyPledges(sgId, sgTypecode, district);
 
   if (electionLoading) {
     return (
@@ -69,7 +75,7 @@ export function PartyCompareClient() {
 
       <p className="text-[0.8125rem] text-text-secondary">{categoryText}</p>
 
-      <ul className="flex gap-3 overflow-x-auto pb-2 list-none p-0 m-0">
+      <ul role="list" tabIndex={0} aria-label="정당 목록 (좌우 스크롤)" className="flex gap-3 overflow-x-auto pb-2 list-none p-0 m-0 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--color-focus-ring)]">
         {partyGroups.map(({ party, pledges }) => (
           <PartyCard
             key={party.id}

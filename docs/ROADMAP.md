@@ -57,7 +57,7 @@ PRD §7 화면 6종 + 비기능 요구사항을 task 단위로 분할한다. tas
 | ID | Task | 관련 ID | 산출물 |
 |---|---|---|---|
 | T-01 | Next.js 16 App Router 라우팅 트리 셋업 | NF-04 | `src/app/` 구조 |
-| T-02 | Tailwind v4 디자인 토큰 적용 (`@theme`, 다크모드 변수) | NF-01 | `globals.css` |
+| T-02 | Tailwind v4 디자인 토큰 적용 (`@theme`, 라이트 전용 `color-scheme: light`) | NF-01 | `globals.css` |
 | T-03 | 글로벌 레이아웃 셸 (헤더, 하단 네비, 안전영역) | NF-01, wireframe §3 | `layout.tsx` |
 | T-04 | API 클라이언트 + TanStack Query Provider + 재시도 정책 | NF-02 | `lib/api/`, `app/providers.tsx` |
 | T-05 | 공통 오류·재시도 UI (토스트/배너) | NF-02 | `components/ErrorBoundary`, `Toast` |
@@ -128,7 +128,7 @@ PRD §7 화면 6종 + 비기능 요구사항을 task 단위로 분할한다. tas
 |---|---|---|
 | T-36 | 기호 순 정렬 규칙 단위 테스트 (중립성 보장) | NF-05 |
 | T-37 | 공약 비교 초기 로딩 ≤ 3초 성능 점검 | NF-06 |
-| T-38 | 접근성 패스 (44px 터치 영역, aria, 다크모드, 포커스 링) | wireframe §6 |
+| T-38 | 접근성 패스 (44px 터치 영역, aria, 포커스 링) | wireframe §6 |
 | T-39 | API 장애 시나리오 (4xx/5xx/타임아웃) 통합 테스트 | NF-02 |
 | T-40 | 개인정보 비전송 검증 (네트워크 트래픽 점검) | NF-03 |
 | T-41 | 핵심 동선 E2E 테스트 (Playwright) | — |

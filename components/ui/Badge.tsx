@@ -11,7 +11,7 @@ type BadgeProps = {
 const variantClasses = {
   default: 'bg-brand-light text-text-primary',
   'early-voting': 'bg-early-voting-bg text-early-voting-fg',
-  'd-day': 'bg-brand text-white text-[1rem] font-medium',
+  'd-day': 'bg-brand-strong text-white text-[1rem] font-medium',
 };
 
 export function Badge({

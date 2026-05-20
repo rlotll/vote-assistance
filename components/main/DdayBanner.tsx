@@ -23,16 +23,16 @@ export function DdayBanner({ election, dday }: DdayBannerProps) {
   return (
     <section
       aria-label="선거 D-day 안내"
-      className="bg-brand rounded-card p-6 text-white flex flex-col gap-2"
+      className="bg-brand-strong rounded-card p-6 text-white flex flex-col gap-2"
     >
-      <h2 className="text-sm font-medium opacity-80">{election.name}</h2>
+      <h2 className="text-sm font-medium">{election.name}</h2>
       <span
         className="text-5xl font-bold"
         aria-label={ddayAriaLabel(dday)}
       >
         {formatDdayLabel(dday)}
       </span>
-      <p className="text-sm opacity-80">{formatElectionDay(election.electionDay)}</p>
+      <p className="text-sm">{formatElectionDay(election.electionDay)}</p>
     </section>
   );
 }

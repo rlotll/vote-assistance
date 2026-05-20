@@ -7,19 +7,17 @@ import { showApiError } from '@/lib/api/show-api-error';
 import type { District, PollingStation } from '@/types/domain';
 import type { ApiResult, ApiError } from '@/types/api';
 
-export function usePollingStations(
-  sgId: string | null,
-  sgTypecode: string | null,
-  district: District | null,
-) {
-  const enabled = !!sgId && !!sgTypecode && !!district;
+// 데이터 없을 때 반환할 안정 참조 — 매 렌더 새 [] 반환 시 useGeocodedStations effect가 무한 실행됨
+const EMPTY: PollingStation[] = [];
+
+export function usePollingStations(sgId: string | null, district: District | null) {
+  const enabled = !!sgId && !!district;
 
   const query = useQuery<ApiResult<PollingStation[]>>({
-    queryKey: ['polling-stations', sgId, sgTypecode, district?.sido.name, district?.sigungu.name],
+    queryKey: ['polling-stations', sgId, district?.sido.name, district?.sigungu.name],
     queryFn: () => {
       const params = new URLSearchParams({
         sgId: sgId!,
-        sgTypecode: sgTypecode!,
         sidoName: district!.sido.name,
         sggName: district!.sigungu.name,
       });
@@ -36,7 +34,7 @@ export function usePollingStations(
     if (apiError) showApiError(apiError, query.refetch);
   }, [apiError, query.refetch]);
 
-  const pollingStations = query.data?.ok === true ? query.data.data : [];
+  const pollingStations = query.data?.ok === true ? query.data.data : EMPTY;
 
   return {
     pollingStations,

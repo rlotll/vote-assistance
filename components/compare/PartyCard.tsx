@@ -37,7 +37,7 @@ export function PartyCard({ party, pledges, selectedCategories }: Props) {
               {selectedCategories.length > 0 ? '선택한 분야의 정책이 없어요' : '등록된 정책이 없어요'}
             </p>
           ) : (
-            <ul className="flex flex-col gap-2.5 list-none p-0 m-0">
+            <ul role="list" className="flex flex-col gap-2.5 list-none p-0 m-0">
               {filtered.map((pledge) => (
                 <li key={pledge.id} className="flex flex-col gap-1">
                   <p className="text-[0.875rem] text-text-primary leading-snug">{pledge.title}</p>
@@ -46,7 +46,7 @@ export function PartyCard({ party, pledges, selectedCategories }: Props) {
                       href={pledge.sourceUrl}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="inline-flex items-center gap-1 text-[0.75rem] text-brand hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--color-focus-ring)]"
+                      className="inline-flex items-center gap-1 text-[0.75rem] text-brand-strong hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--color-focus-ring)]"
                     >
                       <ExternalLink className="w-3 h-3" aria-hidden="true" />
                       원문 보기

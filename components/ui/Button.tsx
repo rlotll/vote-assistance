@@ -14,9 +14,9 @@ type ButtonProps = {
 } & Omit<ButtonHTMLAttributes<HTMLButtonElement>, 'children'>;
 
 const variantClasses = {
-  primary: 'bg-brand text-white hover:opacity-90',
-  outline: 'border border-brand text-brand bg-transparent hover:bg-brand-light',
-  ghost: 'text-brand bg-transparent hover:bg-brand-light',
+  primary: 'bg-brand-strong text-white hover:opacity-90',
+  outline: 'border border-brand text-brand-strong bg-transparent hover:bg-brand-light',
+  ghost: 'text-brand-strong bg-transparent hover:bg-brand-light',
 };
 
 const sizeClasses = {

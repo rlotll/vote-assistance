@@ -4,9 +4,9 @@ import { toPosition, normalizeCandidate, normalizeCandidates, type RawCandidateI
 const raw = (over: Partial<RawCandidateItem> = {}): RawCandidateItem => ({
   huboid: 'H1',
   sgId: '20270303',
-  sggCityCode: '11680',
+  sggName: '강남구',
   sgTypecode: '1',
-  gisuk: '1',
+  giho: '1',
   name: '홍길동',
   jdName: '가나다당',
   ...over,
@@ -31,17 +31,16 @@ describe('toPosition', () => {
 });
 
 describe('normalizeCandidate', () => {
-  it('필드를 도메인 모델로 매핑하고 gisuk을 숫자로 변환', () => {
-    expect(normalizeCandidate(raw({ gisuk: '2' }))).toEqual({
+  it('필드를 도메인 모델로 매핑하고 giho를 숫자로 변환', () => {
+    expect(normalizeCandidate(raw({ giho: '2' }))).toEqual({
       id: 'H1',
       electionId: '20270303',
-      districtCode: '11680',
+      districtCode: '강남구',
       number: 2,
       name: '홍길동',
       partyId: '가나다당',
       partyName: '가나다당',
       position: 'PRESIDENT',
-      photoUrl: undefined,
     });
   });
 
@@ -63,17 +62,23 @@ describe('normalizeCandidate', () => {
     expect(c.partyName).toBe('무소속');
   });
 
-  it('sggCityCode 없으면 빈 문자열', () => {
-    expect(normalizeCandidate(raw({ sggCityCode: undefined })).districtCode).toBe('');
+  it('sggName 없으면 빈 문자열', () => {
+    expect(normalizeCandidate(raw({ sggName: undefined })).districtCode).toBe('');
+  });
+
+  it('giho 미제공(비례·교육감) 시 num으로 대체, 둘 다 없으면 0', () => {
+    expect(normalizeCandidate(raw({ giho: undefined, num: '3' })).number).toBe(3);
+    expect(normalizeCandidate(raw({ giho: '', num: '2' })).number).toBe(2); // 교육감: giho 빈 문자열
+    expect(normalizeCandidate(raw({ giho: undefined, num: undefined })).number).toBe(0);
   });
 });
 
 describe('normalizeCandidates — 기호순 정렬 (NF-05 중립성)', () => {
   it('입력 순서와 무관하게 기호번호 오름차순으로 정렬', () => {
     const result = normalizeCandidates([
-      raw({ huboid: 'C', gisuk: '3' }),
-      raw({ huboid: 'A', gisuk: '1' }),
-      raw({ huboid: 'B', gisuk: '2' }),
+      raw({ huboid: 'C', giho: '3' }),
+      raw({ huboid: 'A', giho: '1' }),
+      raw({ huboid: 'B', giho: '2' }),
     ]);
     expect(result.map((c) => c.number)).toEqual([1, 2, 3]);
     expect(result.map((c) => c.id)).toEqual(['A', 'B', 'C']);

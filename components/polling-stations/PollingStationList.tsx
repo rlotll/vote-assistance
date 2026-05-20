@@ -6,12 +6,13 @@ import type { PollingStation } from '@/types/domain';
 
 type Props = {
   pollingStations: PollingStation[];
+  onSelect: (id: string) => void;
   isLoading: boolean;
   isError: boolean;
   noElection: boolean;
 };
 
-export function PollingStationList({ pollingStations, isLoading, isError, noElection }: Props) {
+export function PollingStationList({ pollingStations, onSelect, isLoading, isError, noElection }: Props) {
   if (isLoading) {
     return (
       <div aria-busy="true" className="flex flex-col gap-3">
@@ -45,9 +46,9 @@ export function PollingStationList({ pollingStations, isLoading, isError, noElec
   }
 
   return (
-    <ul className="flex flex-col gap-3 list-none p-0 m-0">
+    <ul role="list" className="flex flex-col gap-3 list-none p-0 m-0">
       {pollingStations.map((station) => (
-        <PollingStationCard key={station.id} station={station} />
+        <PollingStationCard key={station.id} station={station} onSelect={onSelect} />
       ))}
     </ul>
   );

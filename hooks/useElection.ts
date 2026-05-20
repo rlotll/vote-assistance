@@ -27,6 +27,9 @@ export function useElection() {
 
   // ApiResult 디스크리미네이트 — ok:false는 data에 담겨 옴 (throw 안 함)
   const election = data?.ok ? pickActiveElection(data.data) : null;
+  // 같은 선거일(sgId)에 동시 실시되는 선거 종류 전체 — 후보자 탭의 선거 종류 선택용
+  const electionTypes =
+    data?.ok && election ? data.data.filter((e) => e.id === election.id) : [];
   const apiError: ApiError | null = data?.ok === false ? data.error : null;
 
   useEffect(() => {
@@ -36,6 +39,7 @@ export function useElection() {
 
   return {
     election,
+    electionTypes,
     isLoading: query.isLoading,
     isError: !!apiError || query.isError,
     apiError,

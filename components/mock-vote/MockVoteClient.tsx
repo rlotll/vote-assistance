@@ -9,6 +9,7 @@ import { useCandidates } from '@/hooks/useCandidates';
 import { usePartyPledges } from '@/hooks/usePartyPledges';
 import { useMockVoteStore } from '@/stores/mockVoteStore';
 import { buildSteps } from '@/lib/mock-vote/steps';
+import { sgTypeMeta } from '@/lib/elections/sg-type';
 import { Button } from '@/components/ui/Button';
 import { Skeleton } from '@/components/ui/Skeleton';
 import { StepProgress } from './StepProgress';
@@ -17,18 +18,32 @@ import { MockVoteResult } from './MockVoteResult';
 
 export function MockVoteClient() {
   const district = useUserStore((s) => s.district);
-  const { election, isLoading: electionLoading } = useElection();
+  const { election, electionTypes, isLoading: electionLoading } = useElection();
 
   const sgId = election?.id ?? null;
-  const sgTypecode = election?.sgTypecode ?? null;
+  const sidoName = district?.sido.name ?? null;
+  const sggName = district?.sigungu.name ?? null;
 
-  const { candidates } = useCandidates(sgId, sgTypecode, district);
-  const { partyGroups } = usePartyPledges(sgId, sgTypecode);
-  const parties = partyGroups.map((g) => g.party);
+  const steps = election ? buildSteps(election, electionTypes) : [];
 
   const { selections, setSelection, reset } = useMockVoteStore();
   const [current, setCurrent] = useState(0);
   const [done, setDone] = useState(false);
+
+  // 현재 스텝의 선거 종류로만 후보/정당 조회 (스텝마다 종류가 다름)
+  const step = steps[current];
+  const candTypecode = step?.kind === 'candidate' ? step.sgTypecode : null;
+  const partyTypecode = step?.kind === 'party' ? step.sgTypecode : null;
+  const candScope = candTypecode ? sgTypeMeta(candTypecode).scope : null;
+
+  const { candidates } = useCandidates(
+    sgId,
+    candTypecode,
+    sidoName,
+    candScope === 'sigungu' ? sggName : null,
+  );
+  const { partyGroups } = usePartyPledges(sgId, partyTypecode, district);
+  const parties = partyGroups.map((g) => g.party);
 
   if (electionLoading) {
     return (
@@ -46,16 +61,21 @@ export function MockVoteClient() {
     );
   }
 
-  const steps = buildSteps(election);
+  if (steps.length === 0) {
+    return (
+      <p className="text-[length:var(--font-size-body)] text-text-secondary text-center py-8">
+        모의투표할 선거 정보가 없어요
+      </p>
+    );
+  }
 
   if (done) {
     return (
       <MockVoteResult
         steps={steps}
         selections={selections}
-        candidates={candidates}
-        partyGroups={partyGroups}
-        election={election}
+        sgId={election.id}
+        district={district}
         onRetry={() => {
           reset();
           setCurrent(0);
@@ -64,8 +84,6 @@ export function MockVoteClient() {
       />
     );
   }
-
-  const step = steps[current];
   const selection = selections.find((s) => s.step === step.step);
   const selectedId = step.kind === 'candidate' ? selection?.candidateId : selection?.partyId;
   const canProceed = !!selectedId;

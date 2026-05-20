@@ -1,56 +1,54 @@
 import { describe, it, expect } from 'vitest';
-import { normalizeCandidatePledge, normalizeCandidatePledges, type RawPledgeItem } from './normalize';
+import { normalizeCandidatePledges, type RawCandidatePledgeItem } from './normalize';
 
-const raw = (over: Partial<RawPledgeItem> = {}): RawPledgeItem => ({
-  prmsId: 'PL1',
-  prmsTitle: '청년 일자리 확대',
-  prmsCn: '창업 지원과 고용 확대',
-  prmsUrl: 'https://example.com/pledge.pdf',
+// 와이드 포맷: 후보 1인 = item 1개, 공약은 prmsTitle{i}/prmmCont{i}/prmsRealmName{i}로 펼쳐짐
+const wide = (over: Partial<RawCandidatePledgeItem> = {}): RawCandidatePledgeItem => ({
+  cnddtId: 'H1',
+  prmsCnt: '2',
+  prmsOrd1: '1',
+  prmsRealmName1: '경제',
+  prmsTitle1: '청년 일자리 확대',
+  prmmCont1: '창업 지원과 고용 확대',
+  prmsOrd2: '2',
+  prmsRealmName2: '환경',
+  prmsTitle2: '탄소중립 도시',
+  prmmCont2: '재생에너지 전환',
   ...over,
 });
 
-describe('normalizeCandidatePledge', () => {
-  it('필드를 Pledge로 매핑하고 본문 기반으로 분야 분류', () => {
-    expect(normalizeCandidatePledge(raw(), 'H1', 0)).toEqual({
-      id: 'PL1',
+describe('normalizeCandidatePledges — 와이드 포맷 펼치기', () => {
+  it('prmsCnt만큼 공약을 펼치고 분야명 기반으로 분류', () => {
+    const result = normalizeCandidatePledges([wide()], 'H1');
+    expect(result).toHaveLength(2);
+    expect(result[0]).toEqual({
+      id: 'H1-1',
       ownerType: 'candidate',
       ownerId: 'H1',
       category: 'economy',
       title: '청년 일자리 확대',
       body: '창업 지원과 고용 확대',
-      sourceUrl: 'https://example.com/pledge.pdf',
     });
+    expect(result[1].category).toBe('environment');
+    expect(result[1].title).toBe('탄소중립 도시');
   });
 
-  it('prmsId가 없으면 huboid+index로 id 생성', () => {
-    const { prmsId, ...noId } = raw();
-    void prmsId;
-    expect(normalizeCandidatePledge(noId, 'H9', 3).id).toBe('H9-3');
+  it('prmsCnt가 0/없으면 빈 배열', () => {
+    expect(normalizeCandidatePledges([wide({ prmsCnt: '0' })], 'H1')).toEqual([]);
+    expect(normalizeCandidatePledges([wide({ prmsCnt: undefined })], 'H1')).toEqual([]);
   });
 
-  it('prmsUrl이 없으면 sourceUrl은 undefined', () => {
-    const { prmsUrl, ...noUrl } = raw();
-    void prmsUrl;
-    expect(normalizeCandidatePledge(noUrl, 'H1', 0).sourceUrl).toBeUndefined();
+  it('제목이 빈 슬롯은 건너뜀', () => {
+    const result = normalizeCandidatePledges([wide({ prmsCnt: '2', prmsTitle2: undefined })], 'H1');
+    expect(result).toHaveLength(1);
+    expect(result[0].id).toBe('H1-1');
   });
 
-  it('분야명(prmsRealmName)도 분류에 반영', () => {
-    const p = normalizeCandidatePledge(
-      raw({ prmsTitle: '미래 비전', prmsCn: '지역 발전', prmsRealmName: '환경' }),
-      'H1',
-      0,
-    );
-    expect(p.category).toBe('environment');
+  it('본문(prmmCont)이 없어도 제목만 있으면 포함, body는 빈 문자열', () => {
+    const result = normalizeCandidatePledges([wide({ prmsCnt: '1', prmmCont1: undefined })], 'H1');
+    expect(result[0].body).toBe('');
   });
-});
 
-describe('normalizeCandidatePledges', () => {
-  it('응답 순서를 유지하며 모두 정규화', () => {
-    const result = normalizeCandidatePledges(
-      [raw({ prmsId: 'A' }), raw({ prmsId: 'B' })],
-      'H1',
-    );
-    expect(result.map((p) => p.id)).toEqual(['A', 'B']);
-    expect(result.every((p) => p.ownerId === 'H1')).toBe(true);
+  it('빈 입력은 빈 배열', () => {
+    expect(normalizeCandidatePledges([], 'H1')).toEqual([]);
   });
 });

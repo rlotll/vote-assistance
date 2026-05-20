@@ -4,48 +4,55 @@ import { useRouter } from 'next/navigation';
 import { CheckCircle2 } from 'lucide-react';
 import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
+import { useCandidates } from '@/hooks/useCandidates';
+import { usePartyPledges } from '@/hooks/usePartyPledges';
 import { useCandidatePledges } from '@/hooks/useCandidatePledges';
-import type { Candidate, Election, PartyWithPledges } from '@/types/domain';
+import { sgTypeMeta } from '@/lib/elections/sg-type';
+import type { District } from '@/types/domain';
 import type { MockVoteStep } from '@/lib/mock-vote/steps';
 import type { MockVoteSelection } from '@/stores/mockVoteStore';
 
 type Props = {
   steps: MockVoteStep[];
   selections: MockVoteSelection[];
-  candidates: Candidate[];
-  partyGroups: PartyWithPledges[];
-  election: Election;
+  sgId: string;
+  district: District | null;
   onRetry: () => void;
 };
 
-// 결과 요약 카드 — 선택한 후보/정당 + 주요 공약 1건 (F-18: 저장/전송 없이 화면 표시만)
+// 결과 요약 카드 — 선택한 후보/정당 + 주요 공약 1건 (F-18: 저장/전송 없이 화면 표시만).
+// 스텝마다 선거 종류가 달라 카드 단위로 해당 종류 데이터를 조회한다(react-query 캐시로 진행 중 조회분 재사용).
 function ResultCard({
   step,
   selection,
-  candidates,
-  partyGroups,
-  election,
+  sgId,
+  district,
 }: {
   step: MockVoteStep;
   selection?: MockVoteSelection;
-  candidates: Candidate[];
-  partyGroups: PartyWithPledges[];
-  election: Election;
+  sgId: string;
+  district: District | null;
 }) {
   const isCandidate = step.kind === 'candidate';
-  const candidate = isCandidate
-    ? candidates.find((c) => c.id === selection?.candidateId)
-    : undefined;
-  const partyGroup = !isCandidate
-    ? partyGroups.find((g) => g.party.id === selection?.partyId)
-    : undefined;
+  const scope = sgTypeMeta(step.sgTypecode).scope;
+  const sidoName = district?.sido.name ?? null;
+  const sggName = district?.sigungu.name ?? null;
 
-  // candidate 스텝일 때만 공약 조회 (party는 partyGroup.pledges 사용)
+  const { candidates } = useCandidates(
+    sgId,
+    isCandidate ? step.sgTypecode : null,
+    sidoName,
+    scope === 'sigungu' ? sggName : null,
+  );
+  const { partyGroups } = usePartyPledges(sgId, isCandidate ? null : step.sgTypecode, district);
   const { pledges } = useCandidatePledges(
-    election.id,
-    election.sgTypecode,
+    sgId,
+    step.sgTypecode,
     isCandidate ? (selection?.candidateId ?? null) : null,
   );
+
+  const candidate = isCandidate ? candidates.find((c) => c.id === selection?.candidateId) : undefined;
+  const partyGroup = !isCandidate ? partyGroups.find((g) => g.party.id === selection?.partyId) : undefined;
 
   const name = candidate?.name ?? partyGroup?.party.name ?? '선택 안 함';
   const number = candidate?.number ?? partyGroup?.party.number;
@@ -71,7 +78,7 @@ function ResultCard({
   );
 }
 
-export function MockVoteResult({ steps, selections, candidates, partyGroups, election, onRetry }: Props) {
+export function MockVoteResult({ steps, selections, sgId, district, onRetry }: Props) {
   const router = useRouter();
 
   return (
@@ -87,9 +94,8 @@ export function MockVoteResult({ steps, selections, candidates, partyGroups, ele
             key={step.step}
             step={step}
             selection={selections.find((s) => s.step === step.step)}
-            candidates={candidates}
-            partyGroups={partyGroups}
-            election={election}
+            sgId={sgId}
+            district={district}
           />
         ))}
       </div>

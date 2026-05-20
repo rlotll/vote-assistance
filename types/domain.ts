@@ -86,6 +86,7 @@ export interface PollingStation {
   id: string;
   name: string;
   address: string;
+  floor?: string;          // 층 정보 (좌표 검색 정확도 위해 address와 분리)
   lat: number;
   lng: number;
   hours: string;           // "06:00 ~ 18:00"

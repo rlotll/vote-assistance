@@ -37,7 +37,7 @@ export function CandidateCard({ candidate, pledges, isLoading, selectedCategorie
                 </div>
               )}
               <span
-                className="absolute -bottom-1 -right-1 w-5 h-5 rounded-full bg-brand text-white text-[0.75rem] font-medium flex items-center justify-center"
+                className="absolute -bottom-1 -right-1 w-5 h-5 rounded-full bg-brand-strong text-white text-[0.75rem] font-medium flex items-center justify-center"
                 aria-label={`기호 ${candidate.number}번`}
               >
                 {candidate.number}
@@ -61,7 +61,7 @@ export function CandidateCard({ candidate, pledges, isLoading, selectedCategorie
               {selectedCategories.length > 0 ? '선택한 분야의 공약이 없어요' : '등록된 공약이 없어요'}
             </p>
           ) : (
-            <ul className="flex flex-col gap-2.5 list-none p-0 m-0">
+            <ul role="list" className="flex flex-col gap-2.5 list-none p-0 m-0">
               {filtered.map((pledge) => (
                 <li key={pledge.id} className="flex flex-col gap-1">
                   <p className="text-[0.875rem] text-text-primary leading-snug">{pledge.title}</p>
@@ -70,7 +70,7 @@ export function CandidateCard({ candidate, pledges, isLoading, selectedCategorie
                       href={pledge.sourceUrl}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="inline-flex items-center gap-1 text-[0.75rem] text-brand hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--color-focus-ring)]"
+                      className="inline-flex items-center gap-1 text-[0.75rem] text-brand-strong hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--color-focus-ring)]"
                     >
                       <ExternalLink className="w-3 h-3" aria-hidden="true" />
                       원문 보기

@@ -39,7 +39,7 @@ ROADMAP §5.8 횡단 품질 task(T-36~T-42)를 사람이 화면별로 통과/실
 | # | 항목 | 검증 방법 | 적용 화면 |
 |---|---|---|---|
 | A-1 | 모든 인터랙티브 요소가 44×44px 터치 영역 충족 | 수동 (DevTools 측정) | 전 화면 |
-| A-2 | `prefers-color-scheme: dark`에서 모든 텍스트가 WCAG AA 명도비(4.5:1) 통과 | 수동 (Lighthouse) | 전 화면 |
+| A-2 | 라이트모드(전용) 텍스트가 WCAG AA 명도비(4.5:1) 통과 + `color-scheme: light`로 시스템 다크모드 무시 | **자동 (axe `e2e/a11y.spec.ts`)** | 전 화면 |
 | A-3 | 키보드만으로 모든 동선 완주 가능 (Tab/Enter/Space/Esc) | 수동 | 전 화면 |
 | A-4 | 포커스 시 `--color-focus-ring` 외곽선 가시 | 수동 | 전 화면 |
 | A-5 | 장식용 아이콘에 `aria-hidden="true"` 부착 | 수동 (DOM 검사) | 전 화면 |

@@ -1,83 +1,52 @@
 import { describe, it, expect } from 'vitest';
-import { extractTime, normalizeHours, normalizeStation, type RawPollingStationItem } from './normalize';
-
-describe('extractTime', () => {
-  it('"YYYYMMDD HH:MM"에서 HH:MM만 추출', () => {
-    expect(extractTime('20260603 06:00')).toBe('06:00');
-  });
-
-  it('이미 "HH:MM"이면 그대로', () => {
-    expect(extractTime('18:00')).toBe('18:00');
-  });
-
-  it('undefined면 빈 문자열', () => {
-    expect(extractTime(undefined)).toBe('');
-  });
-
-  it('시각 패턴이 없으면 원본 반환(fallback)', () => {
-    expect(extractTime('상시')).toBe('상시');
-  });
-});
-
-describe('normalizeHours', () => {
-  const base: RawPollingStationItem = { pollPlaceName: 'X', placeAddr: 'Y' };
-
-  it('votingTime이 있으면 trim해서 우선 사용', () => {
-    expect(normalizeHours({ ...base, votingTime: '  06:00 ~ 18:00  ' })).toBe('06:00 ~ 18:00');
-  });
-
-  it('open/close 둘 다 있으면 "open ~ close"', () => {
-    expect(normalizeHours({ ...base, openTime: '20260603 06:00', closeTime: '20260603 18:00' }))
-      .toBe('06:00 ~ 18:00');
-  });
-
-  it('open만 있고 close 없으면 선거법 fallback', () => {
-    expect(normalizeHours({ ...base, openTime: '06:00' })).toBe('06:00 ~ 18:00');
-  });
-
-  it('아무것도 없으면 선거법 fallback', () => {
-    expect(normalizeHours(base)).toBe('06:00 ~ 18:00');
-  });
-});
+import { normalizeStation, type RawPollingStationItem } from './normalize';
 
 describe('normalizeStation', () => {
-  const base: RawPollingStationItem = {
-    pollPlaceId: 'P1',
-    pollPlaceName: '강남구민회관',
-    placeAddr: '서울 강남구 ...',
-    xcoord: '127.047',
-    ycoord: '37.517',
-    votingTime: '06:00 ~ 18:00',
-    preVoteYn: 'N',
+  const pre: RawPollingStationItem = {
+    num: '1',
+    evPsName: '청운효자동 사전투표소',
+    placeName: '청운효자동주민센터',
+    addr: '서울특별시 종로구 자하문로 92',
+    emdName: '청운효자동',
+    floor: '1층',
   };
 
-  it('필드를 도메인 모델로 매핑', () => {
-    expect(normalizeStation(base, 0)).toEqual({
-      id: 'P1',
-      name: '강남구민회관',
-      address: '서울 강남구 ...',
-      lat: 37.517,
-      lng: 127.047,
+  it('사전투표소 필드를 도메인 모델로 매핑 (좌표·시간 미제공 → 고정값, 층은 address와 분리)', () => {
+    expect(normalizeStation(pre, 0, true)).toEqual({
+      id: 'pre-1',
+      name: '청운효자동 사전투표소',
+      address: '서울특별시 종로구 자하문로 92',
+      floor: '1층',
+      lat: 0,
+      lng: 0,
       hours: '06:00 ~ 18:00',
-      isEarlyVoting: false,
+      isEarlyVoting: true,
     });
   });
 
-  it('pollPlaceId 없으면 index를 id로 사용', () => {
-    const { pollPlaceId, ...noId } = base;
-    void pollPlaceId;
-    expect(normalizeStation(noId, 5).id).toBe('5');
+  it('선거일투표소는 psName을 이름으로, prefix는 day', () => {
+    const day: RawPollingStationItem = { num: '1', psName: '청운효자동 제1투표소', addr: '서울특별시 종로구 ...' };
+    const r = normalizeStation(day, 0, false);
+    expect(r.id).toBe('day-1');
+    expect(r.name).toBe('청운효자동 제1투표소');
+    expect(r.isEarlyVoting).toBe(false);
   });
 
-  it('좌표 없으면 0으로 fallback', () => {
-    const { xcoord, ycoord, ...noCoord } = base;
-    void xcoord; void ycoord;
-    const r = normalizeStation(noCoord, 0);
-    expect(r.lat).toBe(0);
-    expect(r.lng).toBe(0);
+  it('주소(address)는 층을 포함하지 않으며, floor가 없으면 undefined', () => {
+    expect(normalizeStation(pre, 0, true).address).toBe('서울특별시 종로구 자하문로 92');
+    const { floor, ...noFloor } = pre;
+    void floor;
+    expect(normalizeStation(noFloor, 0, true).floor).toBeUndefined();
   });
 
-  it('preVoteYn === "Y"면 사전투표소', () => {
-    expect(normalizeStation({ ...base, preVoteYn: 'Y' }, 0).isEarlyVoting).toBe(true);
+  it('num 없으면 index를 id로 사용', () => {
+    const { num, ...noNum } = pre;
+    void num;
+    expect(normalizeStation(noNum, 5, true).id).toBe('pre-5');
+  });
+
+  it('투표소명 필드가 모두 없으면 placeName으로 fallback', () => {
+    const r = normalizeStation({ placeName: '시민회관', addr: '주소' }, 0, false);
+    expect(r.name).toBe('시민회관');
   });
 });

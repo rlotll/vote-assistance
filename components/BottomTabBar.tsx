@@ -52,7 +52,7 @@ export function BottomTabBar() {
                   'flex flex-col items-center justify-center gap-1 w-full h-full min-h-touch-min',
                   'text-[0.75rem] font-medium transition-colors',
                   'focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-[var(--color-focus-ring)]',
-                  active ? 'text-brand' : 'text-text-secondary',
+                  active ? 'text-brand-strong' : 'text-text-secondary',
                 ]
                   .filter(Boolean)
                   .join(' ')}

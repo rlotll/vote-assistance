@@ -25,7 +25,7 @@ export function QuickMenu() {
 
   return (
     <nav aria-label="빠른 메뉴">
-      <ul className="flex flex-col gap-3 list-none p-0 m-0">
+      <ul role="list" className="flex flex-col gap-3 list-none p-0 m-0">
         <li>
           <Link
             href={pollingHref}

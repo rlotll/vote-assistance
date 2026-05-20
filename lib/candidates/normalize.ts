@@ -6,12 +6,13 @@ import type { Candidate, CandidatePosition } from '@/types/domain';
 export interface RawCandidateItem {
   huboid: string;        // 후보자 ID
   sgId: string;          // 선거 ID
-  sggCityCode?: string;  // 선거구 코드
   sgTypecode: string;    // 선거종류코드 → position 매핑
-  gisuk: string;         // 기호번호 (문자열) — 정렬 키 NF-05
+  sggName?: string;      // 선거구명 (시군구 단위, districtCode로 사용)
+  sdName?: string;       // 시도명
+  giho?: string;         // 기호번호 (문자열) — 정렬 키 NF-05. 비례대표·교육감·교육의원은 미제공
+  num?: string;          // 결과순서 — giho 미제공 시 정렬 대체
   name: string;          // 후보자명
   jdName?: string;       // 정당명 (무소속 시 없음 또는 "무소속")
-  photo?: string;        // 사진 URL (응답 필드 존재 시)
 }
 
 // sgTypecode → CandidatePosition (api_contract §4.1 + project_nec_sgtypecode_mapping)
@@ -36,16 +37,17 @@ export function toPosition(sgTypecode: string): CandidatePosition {
 export function normalizeCandidate(raw: RawCandidateItem): Candidate {
   const jdName = raw.jdName?.trim() ?? '';
   const isIndependent = jdName === '' || jdName === '무소속';
+  // 교육감 등은 giho가 빈 문자열 → 게재순서(num)로 대체. 빈 문자열도 fallback되도록 ||
+  const number = parseInt(raw.giho || raw.num || '', 10);
   return {
     id: raw.huboid,
     electionId: raw.sgId,
-    districtCode: raw.sggCityCode ?? '',
-    number: parseInt(raw.gisuk, 10),
+    districtCode: raw.sggName ?? '',
+    number: Number.isNaN(number) ? 0 : number,
     name: raw.name,
     partyId: isIndependent ? null : jdName,
     partyName: isIndependent ? '무소속' : jdName,
     position: toPosition(raw.sgTypecode),
-    photoUrl: raw.photo || undefined,
   };
 }
 

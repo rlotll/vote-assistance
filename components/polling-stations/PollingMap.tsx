@@ -1,108 +1,107 @@
 'use client';
 
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
+import { loadKakaoSdk } from '@/lib/kakao/sdk';
 import type { PollingStation } from '@/types/domain';
 
-declare global {
-  interface Window {
-    kakao: any; // eslint-disable-line @typescript-eslint/no-explicit-any
-  }
-}
-
+/* eslint-disable @typescript-eslint/no-explicit-any */
 type Props = {
   pollingStations: PollingStation[];
+  selectedId: string | null;
   isLoading: boolean;
   isError: boolean;
   noElection: boolean;
 };
 
-function resolveCoords(
-  station: PollingStation,
-): Promise<{ lat: number; lng: number }> {
-  if (station.lat !== 0 && station.lng !== 0) {
-    return Promise.resolve({ lat: station.lat, lng: station.lng });
-  }
-  return new Promise((resolve, reject) => {
-    const geocoder = new window.kakao.maps.services.Geocoder();
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    geocoder.addressSearch(station.address, (result: any[], status: string) => {
-      if (status === window.kakao.maps.services.Status.OK) {
-        resolve({ lat: Number(result[0].y), lng: Number(result[0].x) });
-      } else {
-        reject(new Error(`Geocoder failed for: ${station.address}`));
-      }
-    });
-  });
+function hasCoord(s: PollingStation): boolean {
+  return s.lat !== 0 || s.lng !== 0;
 }
 
+function escapeHtml(value: string): string {
+  return value.replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c] ?? c);
+}
 
-export function PollingMap({ pollingStations, isLoading, isError, noElection }: Props) {
+// 마커 클릭/선택 시 표시할 InfoWindow 내용
+function infoContent(s: PollingStation): string {
+  const floor = s.floor ? ` ${escapeHtml(s.floor)}` : '';
+  return `<div style="padding:8px 10px;font-size:12px;line-height:1.5;max-width:220px;">
+    <div style="font-weight:600;margin-bottom:2px;">${escapeHtml(s.name)}</div>
+    <div style="color:#555;">${escapeHtml(s.address)}${floor}</div>
+    <div style="color:#555;">${escapeHtml(s.hours)}</div>
+  </div>`;
+}
+
+export function PollingMap({ pollingStations, selectedId, isLoading, isError, noElection }: Props) {
   const containerRef = useRef<HTMLDivElement>(null);
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const mapRef = useRef<any>(null);
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const markersRef = useRef<any[]>([]);
+  const markersRef = useRef<Map<string, any>>(new Map());
+  const infoWindowRef = useRef<any>(null);
+  const [mapReady, setMapReady] = useState(false);
   const apiKey = process.env.NEXT_PUBLIC_KAKAO_MAP_KEY;
 
-  // SDK 로드 + 지도 초기화 (1회만 실행)
+  // SDK 로드 + 지도 초기화 (1회). 초기화는 비동기이므로 완료를 mapReady로 알려 마커 effect를 재실행시킨다.
   useEffect(() => {
     if (!apiKey || !containerRef.current) return;
-
-    function initMap() {
-      if (!containerRef.current || mapRef.current) return;
-      const center = new window.kakao.maps.LatLng(37.5665, 126.9780);
-      mapRef.current = new window.kakao.maps.Map(containerRef.current, { center, level: 5 });
-    }
-
-    if (window.kakao?.maps) {
-      window.kakao.maps.load(initMap);
-      return;
-    }
-
-    const existing = document.querySelector('script[data-kakao-map]');
-    if (existing) {
-      existing.addEventListener('load', () => window.kakao.maps.load(initMap));
-      return;
-    }
-
-    const script = document.createElement('script');
-    script.src = `https://dapi.kakao.com/v2/maps/sdk.js?appkey=${apiKey}&libraries=services&autoload=false`;
-    script.setAttribute('data-kakao-map', '');
-    script.onload = () => window.kakao.maps.load(initMap);
-    document.head.appendChild(script);
+    let cancelled = false;
+    loadKakaoSdk()
+      .then((kakao) => {
+        if (cancelled || !containerRef.current || mapRef.current) return;
+        const center = new kakao.maps.LatLng(37.5665, 126.978);
+        mapRef.current = new kakao.maps.Map(containerRef.current, { center, level: 5 });
+        setMapReady(true);
+      })
+      .catch(() => {});
+    return () => {
+      cancelled = true;
+    };
   }, [apiKey]);
 
-  // 마커 갱신 (pollingStations 변경 시 기존 마커 제거 후 재추가)
+  // 마커 갱신 (좌표가 보강된 투표소만)
   useEffect(() => {
-    if (!mapRef.current) return;
+    const kakao = window.kakao;
+    if (!mapReady || !mapRef.current || !kakao?.maps) return;
 
-    // 기존 마커 제거
     markersRef.current.forEach((m) => m.setMap(null));
-    markersRef.current = [];
+    markersRef.current.clear();
 
-    if (pollingStations.length === 0) return;
+    const located = pollingStations.filter(hasCoord);
+    if (located.length === 0) return;
 
-    const bounds = new window.kakao.maps.LatLngBounds();
-    const promises = pollingStations.map((station) =>
-      resolveCoords(station)
-        .then(({ lat, lng }) => {
-          const position = new window.kakao.maps.LatLng(lat, lng);
-          const marker = new window.kakao.maps.Marker({ map: mapRef.current, position, title: station.name });
-          markersRef.current.push(marker);
-          bounds.extend(position);
-        })
-        .catch((err) => {
-          console.warn('[PollingMap] 마커 스킵:', err.message);
-        }),
-    );
+    if (!infoWindowRef.current) {
+      infoWindowRef.current = new kakao.maps.InfoWindow({ removable: true });
+    }
 
-    Promise.all(promises).then(() => {
-      if (!bounds.isEmpty()) mapRef.current.setBounds(bounds);
+    const bounds = new kakao.maps.LatLngBounds();
+    located.forEach((s) => {
+      const position = new kakao.maps.LatLng(s.lat, s.lng);
+      const marker = new kakao.maps.Marker({ map: mapRef.current, position, title: s.name });
+      // 마커 클릭 시 투표소 정보 표시
+      kakao.maps.event.addListener(marker, 'click', () => {
+        infoWindowRef.current.setContent(infoContent(s));
+        infoWindowRef.current.open(mapRef.current, marker);
+      });
+      markersRef.current.set(s.id, marker);
+      bounds.extend(position);
     });
-  }, [pollingStations]);
+    if (!bounds.isEmpty()) mapRef.current.setBounds(bounds);
+  }, [pollingStations, mapReady]);
 
-  // 컨테이너는 항상 DOM에 유지해야 SDK 로드 후 지도 인스턴스화가 가능 (useEffect의 ref 가드).
-  // 상태별 안내는 오버레이로 덮어 표시.
+  // 목록에서 선택한 투표소로 지도 중심 이동 + 정보창 표시
+  useEffect(() => {
+    const kakao = window.kakao;
+    if (!mapReady || !mapRef.current || !selectedId || !kakao?.maps) return;
+    const target = pollingStations.find((s) => s.id === selectedId);
+    if (target && hasCoord(target)) {
+      mapRef.current.panTo(new kakao.maps.LatLng(target.lat, target.lng));
+      const marker = markersRef.current.get(selectedId);
+      if (marker && infoWindowRef.current) {
+        infoWindowRef.current.setContent(infoContent(target));
+        infoWindowRef.current.open(mapRef.current, marker);
+      }
+    }
+  }, [selectedId, pollingStations, mapReady]);
+
+  // 컨테이너는 항상 DOM에 유지(SDK 로드 후 인스턴스화). 상태 안내는 오버레이로 표시.
   const overlay =
     (!apiKey && '지도 서비스를 사용할 수 없어요') ||
     (isLoading && '지도를 불러오는 중...') ||
@@ -113,12 +112,7 @@ export function PollingMap({ pollingStations, isLoading, isError, noElection }: 
 
   return (
     <div className="relative w-full h-[50vh] rounded-card overflow-hidden bg-background-secondary">
-      <div
-        ref={containerRef}
-        className="absolute inset-0"
-        aria-label="투표소 위치 지도"
-        role="img"
-      />
+      <div ref={containerRef} className="absolute inset-0" aria-label="투표소 위치 지도" role="img" />
       {overlay && (
         <div className="absolute inset-0 flex items-center justify-center bg-background-secondary">
           <p className="text-[length:var(--font-size-body)] text-text-secondary">{overlay}</p>

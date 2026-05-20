@@ -34,41 +34,40 @@ export function BallotPaper({ step, candidates, parties, selectedId, onSelect }:
 
   return (
     <Card variant={variant} padding="sm">
-      <ul role="radiogroup" aria-label={`${step.label} 투표용지`} className="flex flex-col gap-2 list-none p-0 m-0">
+      <div role="radiogroup" aria-label={`${step.label} 투표용지`} className="flex flex-col gap-2">
         {rows.map((row) => {
           const checked = row.id === selectedId;
           return (
-            <li key={row.id}>
-              <button
-                type="button"
-                role="radio"
-                aria-checked={checked}
-                onClick={() => onSelect(row.id)}
+            <button
+              key={row.id}
+              type="button"
+              role="radio"
+              aria-checked={checked}
+              onClick={() => onSelect(row.id)}
+              className={[
+                'w-full min-h-touch-min flex items-center gap-3 px-3 py-2 rounded-button bg-background-primary text-left transition-colors',
+                'focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--color-focus-ring)]',
+                checked ? 'ring-2 ring-brand' : 'hover:bg-background-secondary',
+              ].join(' ')}
+            >
+              <span className="w-7 h-7 shrink-0 rounded-full bg-background-secondary text-text-primary text-[0.875rem] font-medium flex items-center justify-center">
+                {row.number}
+              </span>
+              <span className="flex flex-col min-w-0">
+                <span className="text-[0.9375rem] font-medium text-text-primary truncate">{row.name}</span>
+                {row.sub && <span className="text-[0.8125rem] text-text-secondary truncate">{row.sub}</span>}
+              </span>
+              <span
                 className={[
-                  'w-full min-h-touch-min flex items-center gap-3 px-3 py-2 rounded-button bg-background-primary text-left transition-colors',
-                  'focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--color-focus-ring)]',
-                  checked ? 'ring-2 ring-brand' : 'hover:bg-background-secondary',
+                  'ml-auto w-5 h-5 shrink-0 rounded-full border-2',
+                  checked ? 'border-brand bg-brand' : 'border-border-default',
                 ].join(' ')}
-              >
-                <span className="w-7 h-7 shrink-0 rounded-full bg-background-secondary text-text-primary text-[0.875rem] font-medium flex items-center justify-center">
-                  {row.number}
-                </span>
-                <span className="flex flex-col min-w-0">
-                  <span className="text-[0.9375rem] font-medium text-text-primary truncate">{row.name}</span>
-                  {row.sub && <span className="text-[0.8125rem] text-text-secondary truncate">{row.sub}</span>}
-                </span>
-                <span
-                  className={[
-                    'ml-auto w-5 h-5 shrink-0 rounded-full border-2',
-                    checked ? 'border-brand bg-brand' : 'border-border-default',
-                  ].join(' ')}
-                  aria-hidden="true"
-                />
-              </button>
-            </li>
+                aria-hidden="true"
+              />
+            </button>
           );
         })}
-      </ul>
+      </div>
     </Card>
   );
 }
