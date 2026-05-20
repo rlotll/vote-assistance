@@ -4,8 +4,8 @@ import { create } from 'zustand';
 import type { CandidatePosition } from '@/types/domain';
 
 export interface MockVoteSelection {
-  step: number;              // 1~7
-  position: CandidatePosition;
+  step: number;              // 1-based 스텝 번호
+  position?: CandidatePosition; // candidate 스텝에만 존재 (party 스텝은 없음)
   candidateId?: string;
   partyId?: string;          // 비례 선거 시
 }

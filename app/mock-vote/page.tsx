@@ -1,9 +1,14 @@
-// S-06: 모의투표 — 플레이스홀더
+import { Header } from '@/components/Header';
+import { MockVoteClient } from '@/components/mock-vote/MockVoteClient';
+
+// S-06: 모의투표
 export default function MockVotePage() {
   return (
-    <main>
-      <p>S-06</p>
-      <h1>모의투표</h1>
-    </main>
+    <>
+      <Header title="모의투표" showBack />
+      <div className="px-4 py-4">
+        <MockVoteClient />
+      </div>
+    </>
   );
 }
