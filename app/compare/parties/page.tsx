@@ -1,9 +1,16 @@
-// S-05: 공약 비교 — 정당 탭 — 플레이스홀더
+import { Header } from '@/components/Header';
+import { CompareTabs } from '@/components/compare/CompareTabs';
+import { PartyCompareClient } from '@/components/compare/PartyCompareClient';
+
+// S-05: 공약 비교 — 정당(비례) 탭
 export default function ComparePartiesPage() {
   return (
-    <main>
-      <p>S-05</p>
-      <h1>공약 비교 — 정당</h1>
-    </main>
+    <>
+      <Header title="공약 비교" showBack />
+      <CompareTabs />
+      <div className="px-4 py-4">
+        <PartyCompareClient />
+      </div>
+    </>
   );
 }

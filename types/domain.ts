@@ -76,6 +76,12 @@ export interface Pledge {
   sourceUrl?: string;      // F-15 원문 출처
 }
 
+// 정당 + 소속 정책 묶음 — S-05 정당 카드 뷰모델 (정당정책 API 응답을 정당별로 그룹핑)
+export interface PartyWithPledges {
+  party: Party;
+  pledges: Pledge[];
+}
+
 export interface PollingStation {
   id: string;
   name: string;
