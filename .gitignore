@@ -43,6 +43,9 @@ yarn-error.log*
 # vercel
 .vercel
 
+# 내부 참고 자료 (보안 스캔 리포트, API 명세 캡처 등 — 배포/공개 제외)
+/.references
+
 # typescript
 *.tsbuildinfo
 next-env.d.ts
