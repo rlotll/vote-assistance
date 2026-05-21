@@ -8,7 +8,8 @@ export default defineConfig({
   },
   test: {
     environment: 'node',
-    include: ['**/*.{test,spec}.ts'],
+    // 기본은 node(순수 로직). 컴포넌트 테스트(.tsx)는 파일 상단 docblock으로 jsdom 환경을 개별 지정한다.
+    include: ['**/*.{test,spec}.{ts,tsx}'],
     exclude: ['node_modules', '.next', 'e2e/**'], // e2e는 Playwright 전용
   },
 });

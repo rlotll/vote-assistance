@@ -2,33 +2,26 @@
 
 import { useElection } from '@/hooks/useElection';
 import { DdayBanner } from './DdayBanner';
+import { DdayBannerLoading } from './DdayBannerLoading';
+import { DdayBannerError } from './DdayBannerError';
 import { NoElectionNotice } from './NoElectionNotice';
 import { DistrictSummary } from './DistrictSummary';
 import { QuickMenu } from './QuickMenu';
-import { Skeleton } from '@/components/ui/Skeleton';
 
 export function HomeClient() {
-  const { election, isLoading, apiError, dday } = useElection();
-
-  if (isLoading) {
-    return (
-      <div className="px-4 py-4 flex flex-col gap-4">
-        <div aria-busy="true">
-          <Skeleton preset="list-item" className="h-32" />
-        </div>
-        <DistrictSummary />
-        <QuickMenu />
-      </div>
-    );
-  }
+  const { election, isLoading, apiError, dday, refetch } = useElection();
 
   return (
     <div className="px-4 py-4 flex flex-col gap-4">
-      {election && dday !== null ? (
+      {isLoading ? (
+        <DdayBannerLoading />
+      ) : election && dday !== null ? (
         <DdayBanner election={election} dday={dday} />
-      ) : !apiError ? (
+      ) : apiError ? (
+        <DdayBannerError onRetry={() => refetch()} />
+      ) : (
         <NoElectionNotice />
-      ) : null}
+      )}
       <DistrictSummary />
       <QuickMenu />
     </div>
