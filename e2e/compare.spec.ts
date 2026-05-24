@@ -21,7 +21,7 @@ test.describe('공약 비교 (S-04/S-05)', () => {
     const group = page.getByRole('group', { name: '선거 종류 선택' });
     await expect(group).toBeVisible();
     // 여러 지역구 종류 중 하나 클릭해도 동작(빈 화면/에러 없이 후보 표시)
-    await group.getByRole('button', { name: '구·시·군의장' }).click();
+    await group.getByRole('button', { name: '구·시·군장' }).click();
     await expect(page.getByText('김후보')).toBeVisible();
   });
 

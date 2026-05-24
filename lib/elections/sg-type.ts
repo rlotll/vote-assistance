@@ -16,7 +16,7 @@ const SG_TYPE_META: Record<string, SgTypeMeta> = {
   '1': { label: '대통령', scope: 'nation', isProportional: false },
   '2': { label: '국회의원', scope: 'sigungu', isProportional: false },
   '3': { label: '시·도지사', scope: 'sido', isProportional: false },
-  '4': { label: '구·시·군의장', scope: 'sigungu', isProportional: false },
+  '4': { label: '구·시·군장', scope: 'sigungu', isProportional: false },
   '5': { label: '시·도의원', scope: 'sigungu', isProportional: false }, // 지역구 광역의원
   '6': { label: '구·시·군의원', scope: 'sigungu', isProportional: false }, // 지역구 기초의원
   '7': { label: '국회의원 비례대표', scope: 'nation', isProportional: true },
