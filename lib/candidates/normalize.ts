@@ -23,10 +23,8 @@ const POSITION_MAP: Record<string, CandidatePosition> = {
   '2': 'PARLIAMENT_MEMBER',
   '3': 'METRO_HEAD',                 // 시·도지사
   '4': 'LOCAL_HEAD',                 // 구·시·군의장
-  '5': 'METRO_COUNCIL',              // 지역구 광역의원 (코드 미확정)
-  '6': 'METRO_COUNCIL',              // 비례 광역의원
-  '7': 'LOCAL_COUNCIL',              // 지역구 기초의원
-  '8': 'LOCAL_COUNCIL',              // 비례 기초의원
+  '5': 'METRO_COUNCIL',              // 지역구 시·도의원(광역의원)
+  '6': 'LOCAL_COUNCIL',              // 지역구 구·시·군의원(기초의원)
   '11': 'EDUCATION_SUPERINTENDENT',  // 교육감
 };
 

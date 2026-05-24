@@ -12,12 +12,6 @@ const tabs = [
     isActive: (p: string) => p === '/',
   },
   {
-    label: '투표소',
-    href: '/polling-stations',
-    icon: MapPin,
-    isActive: (p: string) => p === '/district' || p.startsWith('/polling-stations'),
-  },
-  {
     label: '공약비교',
     href: '/compare/candidates',
     icon: Scale,
@@ -28,6 +22,12 @@ const tabs = [
     href: '/mock-vote',
     icon: CheckSquare,
     isActive: (p: string) => p.startsWith('/mock-vote'),
+  },
+  {
+    label: '투표소',
+    href: '/polling-stations',
+    icon: MapPin,
+    isActive: (p: string) => p === '/district' || p.startsWith('/polling-stations'),
   },
 ] as const;
 

@@ -22,6 +22,8 @@ describe('toPosition', () => {
     expect(toPosition('2')).toBe('PARLIAMENT_MEMBER');
     expect(toPosition('3')).toBe('METRO_HEAD');
     expect(toPosition('4')).toBe('LOCAL_HEAD');
+    expect(toPosition('5')).toBe('METRO_COUNCIL'); // 지역구 시·도의원
+    expect(toPosition('6')).toBe('LOCAL_COUNCIL'); // 지역구 구·시·군의원
     expect(toPosition('11')).toBe('EDUCATION_SUPERINTENDENT');
   });
 

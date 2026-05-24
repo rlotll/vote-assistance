@@ -1,5 +1,6 @@
 import { fetchNec } from '@/lib/api/nec';
 import { normalizeCandidates, type RawCandidateItem } from '@/lib/candidates/normalize';
+import { toCandidateSggName } from '@/lib/districts/sgg-name';
 import type { Candidate } from '@/types/domain';
 import type { ApiResult } from '@/types/api';
 
@@ -15,7 +16,9 @@ export async function GET(request: Request): Promise<Response> {
   const sgId = searchParams.get('sgId');
   const sgTypecode = searchParams.get('sgTypecode');
   const sidoName = searchParams.get('sidoName');  // NEC sdName
-  const sggName = searchParams.get('sggName');    // NEC sggName
+  // 행정구(예: 고양시덕양구)는 후보자 API가 시 단위로만 매칭 → 시까지로 보정
+  const sggParam = searchParams.get('sggName');
+  const sggName = sggParam ? toCandidateSggName(sggParam) : null;    // NEC sggName
 
   if (!sgId || !sgTypecode) {
     return Response.json({

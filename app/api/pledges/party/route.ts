@@ -6,6 +6,7 @@ import {
   type RawPartyCode,
 } from '@/lib/parties/normalize';
 import { sgTypeMeta } from '@/lib/elections/sg-type';
+import { toCandidateSggName } from '@/lib/districts/sgg-name';
 import type { WidePledgeItem } from '@/lib/pledges/wide-pledges';
 import type { PartyWithPledges } from '@/types/domain';
 import type { ApiResult } from '@/types/api';
@@ -34,7 +35,7 @@ export async function GET(request: Request): Promise<Response> {
   const scope = sgTypeMeta(sgTypecode).scope;
   const candParams: Record<string, string | number> = { sgId, sgTypecode };
   if (sidoName) candParams.sdName = sidoName;
-  if (scope === 'sigungu' && sggName) candParams.sggName = sggName;
+  if (scope === 'sigungu' && sggName) candParams.sggName = toCandidateSggName(sggName);
 
   const candidates: RawProportionalCandidate[] = [];
   for (let pageNo = 1; pageNo <= 20; pageNo++) {
